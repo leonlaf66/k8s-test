@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-web
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'git@github.com:leonlaf66/k8s-test.git'
+    path: components/nginx-web
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: nginx-space
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
