@@ -12,4 +12,7 @@ spec:
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: nginx-space
-  syncPolicy: {}
+  syncPolicy:
+    automated:	
+      prune: true	
+      selfHeal: true
