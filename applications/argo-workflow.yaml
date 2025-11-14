@@ -17,7 +17,6 @@ spec:
       values: |
         server:
           tls:
-            secretName: argo-server-tls
             selfSigned: true         
           authModes:
             - server
