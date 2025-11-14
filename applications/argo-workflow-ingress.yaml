@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-workflows-ingress
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argo-workflow 
+  source:
+    repoURL: 'git@github.com:leoniaf66/k8s-test.git'
+    targetRevision: HEAD
+    path: components/argo-workflow
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
