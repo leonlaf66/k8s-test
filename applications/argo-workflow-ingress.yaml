@@ -11,7 +11,7 @@ spec:
     server: 'https://kubernetes.default.svc'
     namespace: argo
   source:
-    repoURL: 'git@github.com:leoniaf66/k8s-test.git'
+    repoURL: 'git@github.com:leonlaf66/k8s-test.git'
     targetRevision: HEAD
     path: components/argo-workflow
   syncPolicy:
