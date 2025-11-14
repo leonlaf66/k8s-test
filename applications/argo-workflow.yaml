@@ -16,12 +16,10 @@ spec:
     helm:
       values: |
         server:
+          tls:
+            secretName: argo-server-tls            
           authModes:
             - server
-        workflow:
-          securityContext:
-            pns:
-              enabled: true
             
   syncPolicy:
     automated:
