@@ -21,4 +21,4 @@ spec:
   tls:
   - hosts:
     - argo-wf.local
-    secretName: argo-server-tls
+    secretName: argo-workflows-server-tls
