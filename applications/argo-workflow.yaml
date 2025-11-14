@@ -12,17 +12,20 @@ spec:
     repoURL: 'https://argoproj.github.io/argo-helm'
     targetRevision: '0.40.8'
     chart: argo-workflows
-
     helm:
       values: |
         server:
-          secure: false       
+          secure: false
           authModes:
             - server
-            
+          extraArgs:
+            - --auth-mode=server
+            - --secure=false
+          serviceType: ClusterIP
+          
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
