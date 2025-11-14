@@ -13,15 +13,13 @@ spec:
     targetRevision: '0.40.8'
     chart: argo-workflows
 
-    helm:
+  helm:
       values: |
         server:
+          tls:
+            secretName: argo-server-tls            
           authModes:
             - server
-        workflow:
-          securityContext:
-            pns:
-              enabled: true
             
   syncPolicy:
     automated:
