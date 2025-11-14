@@ -16,8 +16,7 @@ spec:
     helm:
       values: |
         server:
-          tls:
-            selfSigned: true         
+          secure: false       
           authModes:
             - server
             

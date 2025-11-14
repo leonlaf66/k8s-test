@@ -3,8 +3,9 @@ kind: Ingress
 metadata:
   name: argo-workflows-ingress
   namespace: argo
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
@@ -18,7 +19,3 @@ spec:
             name: argo-workflows-server
             port:
               number: 2746
-  tls:
-  - hosts:
-    - argo-wf.local
-    secretName: argo-workflows-server-tls
