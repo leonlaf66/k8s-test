@@ -14,15 +14,9 @@ spec:
     chart: argo-workflows
     helm:
       values: |
-        server:
-          secure: false
+        server:        
           authModes:
-            - server
-          extraArgs:
-            - --auth-mode=server
-            - --secure=false
-          serviceType: ClusterIP
-        
+            - server        
         workflow:
           serviceAccount:
             create: true
