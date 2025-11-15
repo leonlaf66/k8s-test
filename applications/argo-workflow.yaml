@@ -22,6 +22,11 @@ spec:
             - --auth-mode=server
             - --secure=false
           serviceType: ClusterIP
+        
+        workflow:
+          serviceAccount:
+            create: true
+            name: argo-workflow
           
   syncPolicy:
     automated:
