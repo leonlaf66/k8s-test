@@ -7,6 +7,7 @@ spec:
   serviceAccountName: argo-workflow
   entrypoint: build-and-push
   
+
   arguments:
     parameters:
     - name: repo-url
@@ -15,10 +16,12 @@ spec:
       value: "main"
     - name: image-name
       value: "leonlaf/nodejs-k8s"
-    - name: image-tag
-      value: "latest"
     - name: dockerfile-path
       value: "."
+    - name: gitops-repo-url
+      value: "git@github.com:leonlaf66/k8s-test.git"
+    - name: gitops-yaml-path
+      value: "components/nodejs-k8s/deployment.yaml"
   
   volumeClaimTemplates:
   - metadata:
@@ -29,6 +32,12 @@ spec:
         requests:
           storage: 1Gi
   
+  volumes:
+  - name: git-ssh-key
+    secret:
+      secretName: git-ssh-secret
+      defaultMode: 0400
+
   templates:
   - name: build-and-push
     steps:
@@ -37,6 +46,19 @@ spec:
     
     - - name: build-image
         template: docker-build
+        dependencies: [clone-repo]
+        arguments:
+          parameters:
+          - name: image-tag
+            value: "{{steps.clone-repo.outputs.parameters.generated-tag}}"
+    
+    - - name: update-gitops
+        template: update-gitops-repo
+        dependencies: [build-image]
+        arguments:
+          parameters:
+          - name: new-image-tag
+            value: "{{steps.clone-repo.outputs.parameters.generated-tag}}"
   
   - name: git-clone
     container:
@@ -44,23 +66,35 @@ spec:
       command: [sh, -c]
       args:
         - |
+          set -ex
           git clone {{workflow.parameters.repo-url}} /work/repo
           cd /work/repo
           git checkout {{workflow.parameters.branch}}
-          echo "Cloned repository successfully"
-          ls -la
+          
+          # 获取 Git SHA 并把它保存到一个文件，以便 'outputs' 可以读取
+          git_sha=$(git rev-parse --short HEAD)
+          echo "Cloned repo, Git SHA is: $git_sha"
+          echo $git_sha > /work/git-sha.txt
       volumeMounts:
       - name: workdir
         mountPath: /work
-  
+    outputs:
+      parameters:
+      - name: generated-tag
+        valueFrom:
+          path: /work/git-sha.txt
+
   - name: docker-build
+    inputs:
+      parameters:
+      - name: image-tag
     container:
       image: gcr.io/kaniko-project/executor:latest
       command: [/kaniko/executor]
       args:
         - --context=/work/repo/{{workflow.parameters.dockerfile-path}}
         - --dockerfile=/work/repo/{{workflow.parameters.dockerfile-path}}/Dockerfile
-        - --destination={{workflow.parameters.image-name}}:{{workflow.parameters.image-tag}}
+        - --destination={{workflow.parameters.image-name}}:{{inputs.parameters.image-tag}}
         - --cache=true
         - --cache-ttl=24h
       volumeMounts:
@@ -75,3 +109,54 @@ spec:
         items:
         - key: .dockerconfigjson
           path: config.json
+          
+
+  - name: update-gitops-repo
+    inputs:
+      parameters:
+      - name: new-image-tag
+    container:
+      image: alpine/git:latest
+      command: [sh, -c]
+      args:
+      - |
+        set -ex
+        
+        echo "Configuring SSH..."
+        mkdir -p ~/.ssh
+        cp /etc/git-ssh/id_rsa ~/.ssh/id_rsa
+        cp /etc/git-ssh/known_hosts ~/.ssh/known_hosts 2>/dev/null || true
+        
+        git config --global user.email "argo-workflow-bot@@leon.com"
+        git config --global user.name "Argo Workflow Bot"
+        
+        echo "Cloning GitOps repo: {{workflow.parameters.gitops-repo-url}}"
+        git clone {{workflow.parameters.gitops-repo-url}} /work/gitops-repo
+        cd /work/gitops-repo
+        
+        echo "Updating image tag in {{workflow.parameters.gitops-yaml-path}}..."
+        
+        IMAGE_NAME="{{workflow.parameters.image-name}}"
+        FILE_PATH="{{workflow.parameters.gitops-yaml-path}}"
+        NEW_TAG="{{inputs.parameters.new-image-tag}}"
+        
+        sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$NEW_TAG|g" "$FILE_PATH"
+        
+        echo "Changes:"
+        git diff "$FILE_PATH"
+        
+        echo "Committing and pushing to Git..."
+        git add "$FILE_PATH"
+        if ! git diff --cached --quiet; then
+          git commit -m "feat(nodejs-k8s): Update image to tag $NEW_TAG [skip ci]"
+          git push
+          echo "GitOps repo updated successfully!"
+        else
+          echo "No changes detected. Skipping commit."
+        fi
+
+      volumeMounts:
+      - name: git-ssh-key
+        mountPath: /etc/git-ssh
+      - name: workdir
+        mountPath: /work
