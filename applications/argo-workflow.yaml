@@ -14,7 +14,8 @@ spec:
     chart: argo-workflows
     helm:
       values: |
-        server:        
+        server:
+          secure: false        
           authModes:
             - server        
         workflow:
