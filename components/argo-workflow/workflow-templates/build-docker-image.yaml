@@ -4,6 +4,7 @@ metadata:
   name: build-docker-image
   namespace: argo
 spec:
+  serviceAccountName: argo-workflow
   entrypoint: build-and-push
   
   arguments:
