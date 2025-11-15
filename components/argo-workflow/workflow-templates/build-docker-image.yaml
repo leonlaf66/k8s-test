@@ -1,0 +1,76 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: build-docker-image
+  namespace: argo
+spec:
+  entrypoint: build-and-push
+  
+  arguments:
+    parameters:
+    - name: repo-url
+      value: "https://github.com/leonlaf66/nodejs-k8s.git"
+    - name: branch
+      value: "main"
+    - name: image-name
+      value: "leonlaf/nodejs-k8s"
+    - name: image-tag
+      value: "latest"
+    - name: dockerfile-path
+      value: "."
+  
+  volumeClaimTemplates:
+  - metadata:
+      name: workdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  
+  templates:
+  - name: build-and-push
+    steps:
+    - - name: clone-repo
+        template: git-clone
+    
+    - - name: build-image
+        template: docker-build
+  
+  - name: git-clone
+    container:
+      image: alpine/git:latest
+      command: [sh, -c]
+      args:
+        - |
+          git clone {{workflow.parameters.repo-url}} /work/repo
+          cd /work/repo
+          git checkout {{workflow.parameters.branch}}
+          echo "Cloned repository successfully"
+          ls -la
+      volumeMounts:
+      - name: workdir
+        mountPath: /work
+  
+  - name: docker-build
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      command: [/kaniko/executor]
+      args:
+        - --context=/work/repo/{{workflow.parameters.dockerfile-path}}
+        - --dockerfile=/work/repo/{{workflow.parameters.dockerfile-path}}/Dockerfile
+        - --destination={{workflow.parameters.image-name}}:{{workflow.parameters.image-tag}}
+        - --cache=true
+        - --cache-ttl=24h
+      volumeMounts:
+      - name: workdir
+        mountPath: /work
+      - name: docker-config
+        mountPath: /kaniko/.docker/
+    volumes:
+    - name: docker-config
+      secret:
+        secretName: docker-registry-secret
+        items:
+        - key: .dockerconfigjson
+          path: config.json

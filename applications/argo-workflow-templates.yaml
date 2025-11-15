@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-workflow-templates
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: 'git@github.com:leonlaf66/k8s-test.git'
+    targetRevision: HEAD
+    path: components/argo-workflow/workflow-templates
+  
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argo
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
