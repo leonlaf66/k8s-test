@@ -5,7 +5,6 @@ metadata:
   namespace: nodejs
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
@@ -18,4 +17,8 @@ spec:
           service:
             name: nodejs-k8s
             port:
-              number: 80
+              number: 80  
+  tls:
+  - hosts:
+    - nodejs-k8s.local
+    secretName: nodejs-k8s-tls-secret
