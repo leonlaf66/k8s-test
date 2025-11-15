@@ -7,7 +7,6 @@ spec:
   serviceAccountName: argo-workflow
   entrypoint: build-and-push
   
-
   arguments:
     parameters:
     - name: repo-url
@@ -46,7 +45,6 @@ spec:
     
     - - name: build-image
         template: docker-build
-        dependencies: [clone-repo]
         arguments:
           parameters:
           - name: image-tag
@@ -54,7 +52,6 @@ spec:
     
     - - name: update-gitops
         template: update-gitops-repo
-        dependencies: [build-image]
         arguments:
           parameters:
           - name: new-image-tag
@@ -71,7 +68,7 @@ spec:
           cd /work/repo
           git checkout {{workflow.parameters.branch}}
           
-          # 获取 Git SHA 并把它保存到一个文件，以便 'outputs' 可以读取
+          # 获取 Git SHA
           git_sha=$(git rev-parse --short HEAD)
           echo "Cloned repo, Git SHA is: $git_sha"
           echo $git_sha > /work/git-sha.txt
@@ -109,7 +106,6 @@ spec:
         items:
         - key: .dockerconfigjson
           path: config.json
-          
 
   - name: update-gitops-repo
     inputs:
@@ -126,8 +122,9 @@ spec:
         mkdir -p ~/.ssh
         cp /etc/git-ssh/id_rsa ~/.ssh/id_rsa
         cp /etc/git-ssh/known_hosts ~/.ssh/known_hosts 2>/dev/null || true
+        chmod 600 ~/.ssh/id_rsa
         
-        git config --global user.email "argo-workflow-bot@@leon.com"
+        git config --global user.email "argo-workflow-bot@leon.com"
         git config --global user.name "Argo Workflow Bot"
         
         echo "Cloning GitOps repo: {{workflow.parameters.gitops-repo-url}}"
