@@ -65,5 +65,5 @@ This repository showcases:
 
 ## Related Projects
 
-- [kraken-demo](https://github.com/leonlaf66/kraken-demo) - Production-grade data platform with Terraform/Spacelift
+- [kraken-demo](https://github.com/leonlaf66/kraken-demo-project) - Production-grade data platform with Terraform/Spacelift
 - [kraken-demo-module](https://github.com/leonlaf66/kraken-demo-module) - Reusable Terraform modules
