@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka-connect
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    repoURL: 'git@github.com:leonlaf66/k8s-test.git'
+    targetRevision: HEAD
+    path: components/kafka-connect
+  
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: kafka-connect
+  
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
