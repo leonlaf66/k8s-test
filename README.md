@@ -63,19 +63,6 @@ This repository showcases:
 - No secrets management (Sealed Secrets, External Secrets, etc.)
 - Single-node cluster setup
 
-## Getting Started
-
-```bash
-# Apply ArgoCD Application (it will sync other apps automatically)
-kubectl apply -f applications/argocd.yaml
-
-# Access ArgoCD UI
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-
-# Access Argo Workflow UI
-kubectl port-forward svc/argo-server -n argo 2746:2746
-```
-
 ## Related Projects
 
 - [kraken-demo](https://github.com/leonlaf66/kraken-demo) - Production-grade data platform with Terraform/Spacelift

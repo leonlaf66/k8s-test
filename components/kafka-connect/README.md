@@ -8,7 +8,7 @@ This demonstrates how **MSK Connect workloads can be migrated to EKS** and manag
 
 ## Streaming Platform Components
 
-The following components (currently deployed as ECS services or MSK Connect in the [kraken-demo](https://github.com/leonlaf66/kraken-demo) project) can all be containerized and deployed to EKS with ArgoCD:
+The following components (currently deployed as ECS services or MSK Connect in the [kraken-demo](https://github.com/leonlaf66/kraken-demo-project) project) can all be containerized and deployed to EKS with ArgoCD:
 
 | Component | Current (AWS) | EKS Alternative | Docker Image |
 |-----------|---------------|-----------------|--------------|
@@ -37,38 +37,6 @@ The following components (currently deployed as ECS services or MSK Connect in t
 ```
 kafka-connect/
 ├── deployment.yaml   # Kafka Connect worker + ConfigMap
-├── service.yaml      # ClusterIP service (port 8083)
-└── secret.yaml       # AWS credentials (optional)
-```
-
-## Usage
-
-```bash
-# Deploy via ArgoCD
-kubectl apply -f applications/kafka-connect.yaml
-
-# Check status
-kubectl get pods -n kafka-connect
-
-# Access REST API
-kubectl port-forward svc/kafka-connect 8083:8083 -n kafka-connect
-curl http://localhost:8083/connectors
-```
-
-## Creating a Connector
-
-```bash
-curl -X POST http://localhost:8083/connectors \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "s3-sink-example",
-    "config": {
-      "connector.class": "io.confluent.connect.s3.S3SinkConnector",
-      "tasks.max": "1",
-      "topics": "your-topic",
-      "s3.bucket.name": "your-bucket",
-      "s3.region": "us-east-1",
-      "flush.size": "1000"
-    }
-  }'
+├── service.yaml      # ClusterIP service
+└── secret.yaml       # AWS credentials
 ```

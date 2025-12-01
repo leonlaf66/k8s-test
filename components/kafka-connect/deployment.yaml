@@ -4,24 +4,20 @@ metadata:
   name: kafka-connect-config
   namespace: kafka-connect
 data:
-  # Kafka Connect Worker 配置
   connect-distributed.properties: |
-    # Bootstrap servers - 替换为实际的 Kafka/MSK endpoint
+    # Bootstrap servers
     bootstrap.servers=kafka-bootstrap:9092
     
     # Connect cluster group id
     group.id=kafka-connect-cluster
     
-    # 存储 connector 和 task 配置的 topics
     config.storage.topic=connect-configs
     config.storage.replication.factor=1
     
-    # 存储 offset 的 topic
     offset.storage.topic=connect-offsets
     offset.storage.replication.factor=1
     offset.storage.partitions=25
     
-    # 存储 status 的 topic
     status.storage.topic=connect-status
     status.storage.replication.factor=1
     status.storage.partitions=5
@@ -39,7 +35,7 @@ data:
     # Plugin path
     plugin.path=/usr/share/java,/usr/share/confluent-hub-components
 
-  # S3 Sink Connector 配置示例
+  # S3 Sink Connector example
   s3-sink-connector.json: |
     {
       "name": "s3-sink-example",
@@ -85,7 +81,6 @@ spec:
     spec:
       containers:
       - name: kafka-connect
-        # Confluent Kafka Connect with S3 Sink plugin pre-installed
         image: confluentinc/cp-kafka-connect:7.5.0
         ports:
         - containerPort: 8083
@@ -121,7 +116,6 @@ spec:
           value: "kafka-connect"
         - name: CONNECT_PLUGIN_PATH
           value: "/usr/share/java,/usr/share/confluent-hub-components"
-        # AWS credentials (从 Secret 获取)
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
