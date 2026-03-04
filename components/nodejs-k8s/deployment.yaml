@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: nodejs-app
-        image: leonlaf/nodejs-k8s:v2-metrics
+        image: leonlaf/nodejs-k8s:f434cf1
         ports:
         - containerPort: 3000
           name: http
