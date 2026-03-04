@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nodejs-k8s
+  name: prometheus-adapter
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: 'git@github.com:leonlaf66/k8s-test.git'
     targetRevision: HEAD
-    path: components/nodejs-k8s
+    path: components/prometheus-adapter
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: nodejs
+    namespace: monitoring
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

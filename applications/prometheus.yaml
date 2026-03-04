@@ -1,17 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx-web
+  name: prometheus
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: 'git@github.com:leonlaf66/k8s-test.git'
-    path: components/nginx-web
     targetRevision: HEAD
+    path: components/prometheus
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: nginx-space
+    namespace: monitoring
   syncPolicy:
-    automated:
-      enabled: false
+    syncOptions:
+      - CreateNamespace=true
