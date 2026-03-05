@@ -21,9 +21,9 @@ data:
         matches: "^http_requests_total$"
         as: "http_requests_per_second"
       # rate() over 2-minute window gives requests/second
-      metricsQuery: 'rate(http_requests_total{<<.LabelMatchers>>}[2m])'
+      metricsQuery: 'rate(http_requests_total{<<.LabelMatchers>>, route!="/health"}[2m])'
 
-    # ── Request duration p95 (bonus metric) ───────────────────────────────────
+    # ── Request duration p95 ───────────────────────────────────
     - seriesQuery: 'http_request_duration_seconds_bucket{namespace!="",pod!=""}'
       resources:
         overrides:
