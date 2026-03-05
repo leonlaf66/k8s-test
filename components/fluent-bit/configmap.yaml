@@ -22,7 +22,7 @@ data:
         # Exclude fluent-bit's own logs to avoid circular logging
         Exclude_Path      /var/log/containers/fluent-bit*
         Parser            cri
-        DB                /var/log/flb_kube.db
+        DB                /var/fluent-bit/pos/flb_kube.db
         Mem_Buf_Limit     50MB
         Skip_Long_Lines   On
         Refresh_Interval  10
