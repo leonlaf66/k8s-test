@@ -80,7 +80,7 @@ spec:
           mountPath: /fluent-bit/etc/
         # Position DB (tracks read position across restarts)
         - name: positions
-          mountPath: /var/log/
+          mountPath: /var/fluent-bit/pos/
       volumes:
       - name: varlog
         hostPath:
@@ -93,7 +93,7 @@ spec:
           name: fluent-bit-config
       - name: positions
         hostPath:
-          path: /var/log/fluent-bit-pos
+          path: /var/fluent-bit/pos
           type: DirectoryOrCreate
 ---
 # Service for Fluent Bit metrics (Prometheus scraping)
