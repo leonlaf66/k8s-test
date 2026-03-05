@@ -34,6 +34,13 @@ spec:
         effect: NoSchedule
       containers:
       - name: fluent-bit
+        securityContext:
+          runAsUser: 0
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
         image: fluent/fluent-bit:3.0
         imagePullPolicy: IfNotPresent
         ports:
