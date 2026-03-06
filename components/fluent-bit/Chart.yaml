@@ -1,0 +1,5 @@
+apiVersion: v2
+name: fluent-bit
+description: Fluent Bit log collector DaemonSet
+type: application
+version: 0.1.0

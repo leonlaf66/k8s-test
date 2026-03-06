@@ -1,0 +1,4 @@
+appName: fluent-bit
+namespace: logging
+syncWave: "2"
+env: dev

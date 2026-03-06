@@ -1,0 +1,28 @@
+image:
+  repository: leonlaf/nodejs-k8s
+  tag: f434cf1
+
+replicaCount: 2
+
+namespace: nodejs
+
+ingress:
+  host: nodejs-k8s.local
+  tlsSecret: nodejs-k8s-tls-secret
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 10
+  qpsTarget: "20"
+  cpuUtilization: 70
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+
+env:
+  NODE_ENV: production

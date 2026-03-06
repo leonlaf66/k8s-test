@@ -1,0 +1,4 @@
+appName: nodejs-k8s
+namespace: nodejs
+syncWave: "3"
+env: dev

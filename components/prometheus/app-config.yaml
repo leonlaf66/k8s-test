@@ -1,0 +1,4 @@
+appName: prometheus
+namespace: monitoring
+syncWave: "2"
+env: dev

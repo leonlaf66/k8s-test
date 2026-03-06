@@ -1,0 +1,4 @@
+appName: argo-workflow
+namespace: argo
+syncWave: "2"
+env: dev

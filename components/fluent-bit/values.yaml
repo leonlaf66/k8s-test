@@ -1,0 +1,27 @@
+image:
+  repository: fluent/fluent-bit
+  tag: "3.0"
+
+namespace: logging
+
+resources:
+  requests:
+    memory: "50Mi"
+    cpu: "50m"
+  limits:
+    memory: "200Mi"
+    cpu: "200m"
+
+# Namespace regex: which pod logs to collect
+namespaceFilter: "^(nodejs|monitoring|argocd|ingress-nginx|argo)$"
+
+# Output plugin: stdout | forward | loki
+output: stdout
+
+forward:
+  host: "log-aggregator.logging.svc.cluster.local"
+  port: 24224
+
+loki:
+  host: "loki.logging.svc.cluster.local"
+  port: 3100

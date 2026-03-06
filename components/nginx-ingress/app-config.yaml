@@ -1,0 +1,4 @@
+appName: nginx-ingress
+namespace: ingress-nginx
+syncWave: "1"
+env: dev

@@ -1,0 +1,4 @@
+appName: argocd
+namespace: argocd
+syncWave: "1"
+env: dev

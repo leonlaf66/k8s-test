@@ -1,0 +1,149 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: build-docker-image
+  namespace: argo
+spec:
+  serviceAccountName: argo-workflow
+  entrypoint: build-and-push
+
+  arguments:
+    parameters:
+    - name: repo-url
+      value: "https://github.com/leonlaf66/nodejs-k8s.git"
+    - name: branch
+      value: "main"
+    - name: image-name
+      value: "leonlaf/nodejs-k8s"
+    - name: dockerfile-path
+      value: "."
+    - name: gitops-repo-url
+      value: "git@github.com:leonlaf66/k8s-test.git"
+    # Now points to the Helm values file, not the raw deployment.yaml
+    - name: gitops-values-path
+      value: "components/nodejs-k8s/values/{{ .Values.env }}"
+
+  volumeClaimTemplates:
+  - metadata:
+      name: workdir
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+
+  volumes:
+  - name: git-ssh-key
+    secret:
+      secretName: git-ssh-secret
+      defaultMode: 0400
+
+  templates:
+  - name: build-and-push
+    steps:
+    - - name: clone-repo
+        template: git-clone
+
+    - - name: build-image
+        template: docker-build
+        arguments:
+          parameters:
+          - name: image-tag
+            value: "{{steps.clone-repo.outputs.parameters.generated-tag}}"
+
+    - - name: update-gitops
+        template: update-gitops-repo
+        arguments:
+          parameters:
+          - name: new-image-tag
+            value: "{{steps.clone-repo.outputs.parameters.generated-tag}}"
+
+  - name: git-clone
+    container:
+      image: alpine/git:latest
+      command: [sh, -c]
+      args:
+      - |
+        set -ex
+        git clone {{workflow.parameters.repo-url}} /work/repo
+        cd /work/repo
+        git checkout {{workflow.parameters.branch}}
+        git rev-parse --short HEAD > /work/git-sha.txt
+        cat /work/git-sha.txt
+      volumeMounts:
+      - name: workdir
+        mountPath: /work
+    outputs:
+      parameters:
+      - name: generated-tag
+        valueFrom:
+          path: /work/git-sha.txt
+
+  - name: docker-build
+    inputs:
+      parameters:
+      - name: image-tag
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      command: [/kaniko/executor]
+      args:
+      - --context=/work/repo/{{workflow.parameters.dockerfile-path}}
+      - --dockerfile=/work/repo/{{workflow.parameters.dockerfile-path}}/Dockerfile
+      - --destination={{workflow.parameters.image-name}}:{{inputs.parameters.image-tag}}
+      - --cache=true
+      - --cache-ttl=24h
+      volumeMounts:
+      - name: workdir
+        mountPath: /work
+      - name: docker-config
+        mountPath: /kaniko/.docker/
+    volumes:
+    - name: docker-config
+      secret:
+        secretName: docker-registry-secret
+        items:
+        - key: .dockerconfigjson
+          path: config.json
+
+  - name: update-gitops-repo
+    inputs:
+      parameters:
+      - name: new-image-tag
+    container:
+      image: alpine/git:latest
+      command: [sh, -c]
+      args:
+      - |
+        set -ex
+        mkdir -p ~/.ssh
+        cp /etc/git-ssh/id_rsa ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+        git config --global user.email "argo-workflow-bot@leon.com"
+        git config --global user.name "Argo Workflow Bot"
+
+        git clone {{workflow.parameters.gitops-repo-url}} /work/gitops-repo
+        cd /work/gitops-repo
+
+        FILE_PATH="{{workflow.parameters.gitops-values-path}}"
+        NEW_TAG="{{inputs.parameters.new-image-tag}}"
+
+        # Target the `tag:` field in values/dev.yaml instead of deployment.yaml
+        sed -i "s|tag:.*|tag: $NEW_TAG|g" "$FILE_PATH"
+
+        echo "Changes:"
+        git diff "$FILE_PATH"
+
+        git add "$FILE_PATH"
+        if ! git diff --cached --quiet; then
+          git commit -m "feat(nodejs-k8s): update image tag to $NEW_TAG [skip ci]"
+          git push
+          echo "GitOps repo updated."
+        else
+          echo "No changes, skipping commit."
+        fi
+      volumeMounts:
+      - name: git-ssh-key
+        mountPath: /etc/git-ssh
+      - name: workdir
+        mountPath: /work

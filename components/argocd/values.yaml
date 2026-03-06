@@ -1,0 +1,3 @@
+ingress:
+  host: argocd.local.test
+  tlsSecret: argocd-server-tls

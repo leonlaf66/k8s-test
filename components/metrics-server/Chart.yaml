@@ -1,0 +1,5 @@
+apiVersion: v2
+name: metrics-server
+description: Kubernetes Metrics Server (static upstream manifest)
+type: application
+version: 0.1.0

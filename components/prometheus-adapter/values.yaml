@@ -1,0 +1,15 @@
+image:
+  repository: registry.k8s.io/prometheus-adapter/prometheus-adapter
+  tag: v0.11.2
+
+namespace: monitoring
+replicaCount: 1
+prometheusURL: "http://prometheus.monitoring.svc.cluster.local:9090/"
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "250m"

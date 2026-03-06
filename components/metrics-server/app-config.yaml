@@ -1,0 +1,4 @@
+appName: metrics-server
+namespace: kube-system
+syncWave: "1"
+env: dev

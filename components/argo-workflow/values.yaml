@@ -1,0 +1,17 @@
+# Values for the upstream argo-workflows subchart.
+# Key must match the chart name in Chart.yaml dependencies.
+env: dev
+argo-workflows:
+  server:
+    secure: false
+    authModes:
+      - server
+  workflow:
+    serviceAccount:
+      create: true
+      name: argo-workflow
+
+# Values for our own templates (ingress, WorkflowTemplates)
+ingress:
+  host: argo-wf.local
+  tlsSecret: argo-wf-tls-secret

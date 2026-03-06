@@ -1,0 +1,17 @@
+# Dev overrides — only what differs from values.yaml
+image:
+  tag: f434cf1   # Argo Workflow bot updates this line on each build
+
+replicaCount: 1
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 3
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "50m"
+  limits:
+    memory: "128Mi"
+    cpu: "200m"
