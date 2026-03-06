@@ -8,4 +8,4 @@ resources:
     memory: "512Mi"
     cpu: "250m"
 storage:
-  enabled: false
+  enabled: true
