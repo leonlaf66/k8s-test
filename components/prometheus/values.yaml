@@ -18,3 +18,8 @@ resources:
   limits:
     memory: "1Gi"
     cpu: "500m"
+
+storage:
+  enabled: false
+  size: "5Gi"
+  storageClass: "local-path"

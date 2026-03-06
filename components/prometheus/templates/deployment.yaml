@@ -58,7 +58,12 @@ spec:
         configMap:
           name: prometheus-config
       - name: storage
+        {{- if .Values.storage.enabled }}
+        persistentVolumeClaim:
+          claimName: prometheus-storage
+        {{- else }}
         emptyDir: {}
+        {{- end }}
 ---
 apiVersion: v1
 kind: Service
