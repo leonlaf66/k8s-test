@@ -1,6 +1,6 @@
 # Dev overrides — only what differs from values.yaml
 image:
-  tag: f434cf1   # Argo Workflow bot updates this line on each build
+  tag: cc54ffd
 
 replicaCount: 1
 
