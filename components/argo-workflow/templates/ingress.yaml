@@ -4,7 +4,9 @@ metadata:
   name: argo-workflows-ingress
   namespace: argo
   annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
+    cert-manager.io/cluster-issuer: local-ca-issuer
 spec:
   ingressClassName: nginx
   rules:

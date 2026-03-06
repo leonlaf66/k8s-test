@@ -3,7 +3,7 @@
 env: dev
 argo-workflows:
   server:
-    secure: false
+    secure: true
     authModes:
       - server
   workflow:
