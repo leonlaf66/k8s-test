@@ -1,0 +1,3 @@
+appName: cert-manager
+namespace: cert-manager
+syncWave: "1"

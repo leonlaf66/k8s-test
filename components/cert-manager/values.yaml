@@ -1,0 +1,31 @@
+# Values for the upstream cert-manager subchart
+cert-manager:
+  # Required: installs the CRDs (Certificate, Issuer, ClusterIssuer etc.)
+  installCRDs: true
+
+  # Resource limits for lab environment
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+  webhook:
+    resources:
+      requests:
+        cpu: "20m"
+        memory: "32Mi"
+      limits:
+        cpu: "100m"
+        memory: "64Mi"
+
+  cainjector:
+    resources:
+      requests:
+        cpu: "20m"
+        memory: "32Mi"
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
