@@ -21,6 +21,10 @@ spec:
       value: "git@github.com:leonlaf66/k8s-test.git"
     - name: gitops-values-path
       value: "components/nodejs-k8s/values/{{ .Values.env }}.yaml"
+    - name: pr-branch
+      value: "main"
+    - name: pr-number
+      value: "0"
 
   volumeClaimTemplates:
   - metadata:
@@ -114,9 +118,12 @@ spec:
       args:
       - |
         set -ex
+        apk add --no-cache curl
+
         mkdir -p ~/.ssh
         cp /etc/git-ssh/id_rsa ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
 
         git config --global user.email "argo-workflow-bot@leon.com"
         git config --global user.name "Argo Workflow Bot"
@@ -124,22 +131,43 @@ spec:
         git clone {{`{{workflow.parameters.gitops-repo-url}}`}} /work/gitops-repo
         cd /work/gitops-repo
 
-        FILE_PATH="{{`{{workflow.parameters.gitops-values-path}}`}}"
         NEW_TAG="{{`{{inputs.parameters.new-image-tag}}`}}"
+        PR_NUMBER="{{`{{workflow.parameters.pr-number}}`}}"
+        PR_BRANCH="{{`{{workflow.parameters.pr-branch}}`}}"
 
-        sed -i "s|tag:.*|tag: $NEW_TAG|g" "$FILE_PATH"
+        # 创建新 branch
+        GITOPS_BRANCH="update/nodejs-k8s-pr-${PR_NUMBER}-${NEW_TAG}"
+        git checkout -b "$GITOPS_BRANCH"
+
+        FILE_PATH="{{`{{workflow.parameters.gitops-values-path}}`}}"
+        sed -i "s|tag:.*|tag: ${NEW_TAG}|g" "$FILE_PATH"
 
         echo "Changes:"
         git diff "$FILE_PATH"
 
         git add "$FILE_PATH"
-        if ! git diff --cached --quiet; then
-          git commit -m "feat(nodejs-k8s): update image tag to $NEW_TAG [skip ci]"
-          git push
-          echo "GitOps repo updated."
-        else
-          echo "No changes, skipping commit."
-        fi
+        git commit -m "feat(nodejs-k8s): update image tag to ${NEW_TAG} for PR #${PR_NUMBER} [skip ci]"
+        git push origin "$GITOPS_BRANCH"
+
+        # 调用 GitHub API 创建 PR
+        curl -s -X POST \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/leonlaf66/k8s-test/pulls \
+          -d "{
+            \"title\": \"feat(nodejs-k8s): update image tag to ${NEW_TAG}\",
+            \"body\": \"Automated PR\\n\\nSource: nodejs-k8s PR #${PR_NUMBER} (branch: ${PR_BRANCH})\\nImage tag: ${NEW_TAG}\",
+            \"head\": \"${GITOPS_BRANCH}\",
+            \"base\": \"main\"
+          }"
+
+        echo "GitOps PR created."
+      env:
+      - name: GITHUB_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: github-token
+            key: token
       volumeMounts:
       - name: git-ssh-key
         mountPath: /etc/git-ssh
