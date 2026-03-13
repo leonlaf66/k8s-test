@@ -1,6 +1,6 @@
 # Dev overrides — only what differs from values.yaml
 image:
-  tag: cc54ffd
+  tag: be4b6e8
 
 replicaCount: 1
 
